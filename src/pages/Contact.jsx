@@ -2,30 +2,70 @@
 import { useState } from 'react';
 
 function Contact() {
+  const [activeForm, setActiveForm] = useState('contact');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     company: '',
-    message: ''
+    message: '',
+    cv: null
   });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    if (e.target.type === 'file') {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.files[0]
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value
+      });
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
+    let emailBody = `Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\nCompany: ${formData.company}\nMessage: ${formData.message}`;
+    
+    if (formData.cv) {
+      emailBody += '\n\nNote: CV is attached as a PDF file.';
+    }
+
+    const mailtoLink = `mailto:haithem.ben.abdelaziz@gmail.com?subject=${encodeURIComponent(
+      `${activeForm === 'cv' ? 'CV Submission' : activeForm === 'spontaneous' ? 'Spontaneous Application' : 'Contact Form'} from ${formData.name}`
+    )}&body=${encodeURIComponent(emailBody)}`;
+    
+    window.location.href = mailtoLink;
   };
 
   return (
     <div className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Form Type Selection */}
+        <div className="flex justify-center space-x-4 mb-8">
+          <button
+            onClick={() => setActiveForm('contact')}
+            className={`px-4 py-2 rounded-lg ${activeForm === 'contact' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            Contact Us
+          </button>
+          <button
+            onClick={() => setActiveForm('cv')}
+            className={`px-4 py-2 rounded-lg ${activeForm === 'cv' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            Submit CV
+          </button>
+          <button
+            onClick={() => setActiveForm('spontaneous')}
+            className={`px-4 py-2 rounded-lg ${activeForm === 'spontaneous' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            Spontaneous Application
+          </button>
+        </div>
+
         {/* Contact Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-6">Contact Us</h1>
@@ -51,7 +91,7 @@ function Contact() {
                   <div className="text-blue-600 mr-4">📧</div>
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <p className="text-gray-600">contact@techcore.com</p>
+                    <p className="text-gray-600">haithem.ben.abdelaziz@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex items-start">
@@ -68,6 +108,11 @@ function Contact() {
           {/* Contact Form */}
           <div>
             <form onSubmit={handleSubmit} className="space-y-6">
+              <h2 className="text-2xl font-bold mb-6">
+                {activeForm === 'cv' ? 'Submit Your CV' : 
+                 activeForm === 'spontaneous' ? 'Spontaneous Application' : 
+                 'Contact Form'}
+              </h2>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   Name
@@ -141,11 +186,29 @@ function Contact() {
                 ></textarea>
               </div>
 
+              {(activeForm === 'cv' || activeForm === 'spontaneous') && (
+                <div>
+                  <label htmlFor="cv" className="block text-sm font-medium text-gray-700 mb-1">
+                    Upload CV (PDF)
+                  </label>
+                  <input
+                    type="file"
+                    id="cv"
+                    name="cv"
+                    accept=".pdf"
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              )}
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
-                Send Message
+                {activeForm === 'cv' ? 'Submit CV' : 
+                 activeForm === 'spontaneous' ? 'Submit Application' : 
+                 'Send Message'}
               </button>
             </form>
           </div>
